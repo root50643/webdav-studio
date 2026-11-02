@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f6f8fc" />
+    <meta name="referrer" content="no-referrer" />
+    <meta
+      name="description"
+      content="漂亮、私密的純前端 WebDAV 工作空間。管理檔案、加密保存連線，並輕鬆追蹤每一次請求。"
+    />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <title>WebDAV Studio · 你的雲端檔案工作空間</title>
+    <script>
+      try {
+        document.documentElement.dataset.theme =
+          localStorage.getItem('webdav-studio-theme') ||
+          (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,47 @@
+# Merge into your existing Nginx configuration. This is a reverse proxy to an
+# existing WebDAV server, not a stand-alone WebDAV implementation.
+# Replace YOURNAME.github.io and the upstream address/path for your environment.
+
+# The map belongs in the http {} block. Origins have no path or trailing slash.
+map $http_origin $dav_cors_origin {
+    default "";
+    "https://YOURNAME.github.io" $http_origin;
+    # "https://dav.your-domain.example" $http_origin;
+    # "http://127.0.0.1:5173" $http_origin; # development only
+}
+
+# Put this location in an existing HTTPS server {} with a valid certificate.
+# The upstream in this example also serves WebDAV at /dav/.
+location /dav/ {
+    client_max_body_size 1g;
+
+    # Avoid duplicate CORS headers if upstream already emits them.
+    proxy_hide_header Access-Control-Allow-Origin;
+    proxy_hide_header Access-Control-Allow-Methods;
+    proxy_hide_header Access-Control-Allow-Headers;
+    proxy_hide_header Access-Control-Expose-Headers;
+    proxy_hide_header Access-Control-Allow-Credentials;
+
+    # "always" also covers 401/403/404/5xx and 207 responses.
+    add_header Access-Control-Allow-Origin $dav_cors_origin always;
+    add_header Vary Origin always;
+    add_header Access-Control-Allow-Methods "OPTIONS, PROPFIND, GET, HEAD, PUT, MKCOL, MOVE, COPY, DELETE" always;
+    add_header Access-Control-Allow-Headers "Authorization, Content-Type, Depth, Destination, Overwrite, If-None-Match, If-Match" always;
+    add_header Access-Control-Expose-Headers "DAV, Allow, ETag, Content-Length, Content-Type, Last-Modified, Retry-After, X-Request-ID" always;
+    add_header Access-Control-Max-Age 600 always;
+
+    # Browser preflights contain no Basic credentials. Return before auth/proxy.
+    if ($request_method = OPTIONS) {
+        return 204;
+    }
+
+    proxy_pass http://127.0.0.1:8080;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_request_buffering off;
+    proxy_buffering off;
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+}

@@ -1,0 +1,3 @@
+WebDAV Studio browser upload fixture.
+繁體中文、空格、# 與 % 檔名測試。
+This is disposable development test data, not a user document.
